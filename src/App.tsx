@@ -1,4 +1,5 @@
-import { ChangeEvent, FormEvent, useState } from "react"
+import { ChangeEvent, FormEvent, useEffect, useState } from "react"
+import { Check, ClipboardText, PlusCircle, Trash } from "@phosphor-icons/react"
 
 import "./global.css"
 import styles from "./App.module.css"
@@ -31,7 +32,8 @@ const list = [
 
 function App() {
   const [todo, setTodo] = useState("")
-  const [toDoList, setToDoList] = useState<List[]>([])
+  const [finished, setFinished] = useState(0)
+  const [toDoList, setToDoList] = useState<List[]>(list)
 
   function handleNewToDoChange(event: ChangeEvent<HTMLInputElement>) {
     setTodo(event.target.value)
@@ -64,11 +66,23 @@ function App() {
     setToDoList(newListWithoutTodo)
   }
 
+  useEffect(() => {
+    const total = toDoList.reduce((acumulador, valorAtual) => {
+      if (valorAtual.isFinished) {
+        return (acumulador += 1)
+      }
+      return acumulador
+    }, 0)
+
+    setFinished(total)
+  }, [todo, toDoList])
+
   return (
     <>
       <header className={styles.header}>
         <img src={todoLogo} className={styles.logo} />
 
+        {/* FORM / INPUT */}
         <form onSubmit={handleCreateNewToDo} className={styles.form}>
           <input
             type="text"
@@ -76,39 +90,59 @@ function App() {
             onChange={handleNewToDoChange}
             placeholder="Adicione uma nova tarefa"
           />
-          <button type="button">Criar</button>
+          <button type="submit">
+            Criar <PlusCircle size={18} weight="bold" />
+          </button>
         </form>
       </header>
 
       <main className={styles.main}>
+        {/* INFO */}
         <div className={styles.info}>
-          <span>Tarefas criadas 0</span>
-          <span>Concluídas 0</span>
-        </div>
+          <div className={styles.criadas}>
+            <span>Tarefas criadas</span>
+            <span className={styles.info_text_count}>{toDoList.length}</span>
+          </div>
 
-        <div className={styles.divider} />
+          <div className={styles.concluidas}>
+            <span>Concluídas</span>
+            <span className={styles.info_text_count}>
+              {finished}
+              {finished > 0 && ` de ${toDoList.length}`}
+            </span>
+          </div>
+        </div>
 
         <div>
           {toDoList.length > 0 ? (
-            toDoList.map((e, index) => (
-              <div key={index}>
-                <input
-                  type="checkbox"
-                  checked={e.isFinished}
-                  onChange={() => handleCheckToDo(index)}
-                />
-                <p>{e.todo}</p>
-                <button type="button" onClick={() => handleDeleteToDo(index)}>
-                  excluir
-                </button>
-              </div>
-            ))
+            <div className={styles.tasks_container}>
+              {/* TASK */}
+              {toDoList.map((e, index) => (
+                <div key={index} className={styles.task}>
+                  <div className={styles.checkbox_container}>
+                    <input
+                      type="checkbox"
+                      checked={e.isFinished}
+                      onChange={() => handleCheckToDo(index)}
+                    />
+                    <Check size={12} weight="bold" />
+                  </div>
+                  <p className={e.isFinished ? styles.finishedTask : ""}>
+                    {e.todo}
+                  </p>
+                  <button type="button" onClick={() => handleDeleteToDo(index)}>
+                    <Trash size={20} />
+                  </button>
+                </div>
+              ))}
+            </div>
           ) : (
-            <p>
-              Você ainda não tem tarefas cadastradas.
-              <br />
-              Crie tarefas e organize seus itens a fazer
-            </p>
+            /* EMPTY */
+            <div className={styles.empty_tasks}>
+              <ClipboardText size={56} weight="light" color="#333333" />
+              <span>Você ainda não tem tarefas cadastradas.</span>
+              <span>Crie tarefas e organize seus itens a fazer</span>
+            </div>
           )}
         </div>
       </main>

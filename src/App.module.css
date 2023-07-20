@@ -60,6 +60,11 @@
   border: none;
   font-size: 0.875rem;
   font-weight: 700;
+  transition: 0.5s;
+}
+
+.form > button:hover {
+  background: var(--blue-400);
 }
 
 .main {
@@ -214,6 +219,7 @@ input[type="checkbox"] {
   outline: none;
   cursor: pointer;
   color: var(--gray-100);
+  transition: 0.5s;
 }
 
 input[type="checkbox"]:hover {
@@ -244,4 +250,15 @@ input[type="checkbox"]:checked:hover {
   border: none;
   background: transparent;
   color: var(--gray-300);
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.5s;
+}
+
+.task > button:hover {
+  border-radius: 4px;
+  background: var(--gray-400);
+  color: var(--danger);
 }

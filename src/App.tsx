@@ -1,4 +1,11 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react"
+import {
+  InvalidEvent,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useState,
+  useRef,
+} from "react"
 import { Check, ClipboardText, PlusCircle, Trash } from "@phosphor-icons/react"
 
 import "./global.css"
@@ -31,19 +38,40 @@ const list = [
 ]
 
 function App() {
+  const ref = useRef(null)
+
   const [todo, setTodo] = useState("")
   const [finished, setFinished] = useState(0)
-  const [toDoList, setToDoList] = useState<List[]>(list)
+  const [toDoList, setToDoList] = useState<List[]>([])
 
   function handleNewToDoChange(event: ChangeEvent<HTMLInputElement>) {
+    event.target.setCustomValidity("")
+
+    console.log("event change", event)
+    console.log("event.target.value change", event.target.value, "\n")
+
     setTodo(event.target.value)
   }
 
   function handleCreateNewToDo(event: FormEvent) {
     event.preventDefault()
 
-    setToDoList([...toDoList, { todo, isFinished: false }])
-    setTodo("")
+    if (todo.trim()) {
+      setToDoList([...toDoList, { todo, isFinished: false }])
+      setTodo("")
+      return
+    }
+
+    const element:
+      | InvalidEvent<HTMLInputElement>
+      | ChangeEvent<HTMLInputElement>
+      | null = ref.current
+    console.log("element", element)
+    // element.setCustomValidity("sdsd")
+
+    if (element) {
+      handleNewToDoInvalid(element)
+    }
   }
 
   function handleCheckToDo(index: number) {
@@ -66,6 +94,19 @@ function App() {
     setToDoList(newListWithoutTodo)
   }
 
+  function handleNewToDoInvalid(
+    event: InvalidEvent<HTMLInputElement> | ChangeEvent<HTMLInputElement>
+  ) {
+    console.log("event invalid", event)
+    console.log("event.target.value invalid", event.target.value)
+
+    event.target.setCustomValidity("Campo obrigatório!")
+
+    if (event.target.value) {
+      event.target.setCustomValidity("Campo obrigatório!")
+    }
+  }
+
   useEffect(() => {
     const total = toDoList.reduce((acumulador, valorAtual) => {
       if (valorAtual.isFinished) {
@@ -85,9 +126,14 @@ function App() {
         {/* FORM / INPUT */}
         <form onSubmit={handleCreateNewToDo} className={styles.form}>
           <input
+            min="3"
+            required
+            ref={ref}
             type="text"
             value={todo}
+            id="inpuText"
             onChange={handleNewToDoChange}
+            onInvalid={handleNewToDoInvalid}
             placeholder="Adicione uma nova tarefa"
           />
           <button type="submit">
